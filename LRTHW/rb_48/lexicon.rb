@@ -9,10 +9,9 @@ class Lexicon
     result = []
     words = sentence.split
     words.each do |word|
-      begin
+      if word.match?(/\A-?\d+\Z/)
         result.push(['number', Integer(word)])
         next
-      rescue    
       end
       @@types.keys.each do |key|
         if @@types[key].include? word.downcase
