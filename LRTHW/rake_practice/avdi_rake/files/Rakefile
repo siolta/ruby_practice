@@ -1,0 +1,35 @@
+Rake.application.options.trace_rules = true
+
+SOURCE_FILES = Rake::FileList.new("sources/**/*.md", "sources/**/*.markdown") do |fl|
+  fl.exclude("~*")
+  fl.exclude(/^sources\/scratch\//)
+  fl.exclude("temp.md")
+end
+
+task :default => :html
+task :html => SOURCE_FILES.pathmap("%{^sources/,outputs/}X.html")
+
+task :clean do
+  rm_rf "outputs"
+end
+
+directory "outputs"
+
+rule ".html" => [->(f){source_for_html(f)}, "outputs"] do |t|
+  mkdir_p t.name.pathmap("%d")
+  sh "pandoc -o #{t.name} #{t.source}"
+end
+
+def source_for_html(html_file)
+  SOURCE_FILES.detect{|f| 
+    f.ext('') == html_file.pathmap("%{^outputs/,sources/}X")
+  }
+end
+
+# Does the same as the rule
+# %W[ch1.md ch2.md ch3.md].each do |md_file|
+#   html_file = File.basename(md_file, ".md") + ".html"
+#   file html_file => md_file do
+#     sh "pandoc -o #{html_file} #{md_file}"
+#   end
+# end
